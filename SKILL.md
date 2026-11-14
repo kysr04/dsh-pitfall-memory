@@ -84,6 +84,16 @@ pitfall-memory/
 
 文件名：`entries/P-<四位序号>-<kebab-slug>.md`
 
+**slug 只能是 ASCII**（`a-z0-9-`），中文一律丢弃，标题里的技术名词会自然留下来：
+
+| 标题 | 文件名 |
+|---|---|
+| `pwsh 直接读 UTF-8 中文文件输出乱码` | `P-0001-pwsh-utf-8.md` |
+| `desktop profile 被 Electron 独占` | `P-0005-desktop-profile-electron.md` |
+| 几乎全中文、ASCII 只剩两三个字符 | `P-0007-entry.md`（兜底） |
+
+**为什么不能带中文**：含中文的文件名在 git（`core.quotepath` 会把路径转成 `\347\233\264` 这种八进制转义）、GitHub Contents API（路径非法报 400）、命令行之间反复出编码问题。**中文留在 `title:` 和正文里，文件名保持 ASCII。**
+
 ```markdown
 ---
 id: P-0007
