@@ -67,11 +67,16 @@ function Get-NextId {
 }
 
 function New-Slug([string]$s) {
+    # 只保留 ASCII：中文/标点一律当分隔符。
+    # 理由：含中文的文件名在 git（core.quotepath）、GitHub Contents API、命令行之间
+    # 反复出现编码摩擦 —— 8 进制转义、路径非法、HTTP 400。标题里保留中文即可。
     $x = $s.ToLower()
-    $x = $x -replace '[^\w\u4e00-\u9fff]+', '-'
+    $x = $x -replace '[^a-z0-9]+', '-'
     $x = $x.Trim('-')
-    if ($x.Length -gt 40) { $x = $x.Substring(0, 40).Trim('-') }
-    if (-not $x) { $x = 'entry' }
+    while ($x -match '--') { $x = $x -replace '--', '-' }
+    if ($x.Length -gt 48) { $x = $x.Substring(0, 48).Trim('-') }
+    # ASCII 有效字符太少（比如标题几乎全中文）→ 用统一兜底名
+    if (-not $x -or ($x -replace '[^a-z0-9]', '').Length -lt 3) { $x = 'entry' }
     $x
 }
 
