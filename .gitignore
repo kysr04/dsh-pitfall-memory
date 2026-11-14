@@ -1,0 +1,16 @@
+# 坑库数据（本地私有，不进仓库）
+.pitfall-memory/
+pitfall-memory/
+
+# DSH 本地状态
+.dsh-meow/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+
+# PowerShell
+*.log
