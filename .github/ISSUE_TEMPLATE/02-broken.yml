@@ -1,0 +1,67 @@
+name: It didn't work
+description: 装了不生效 / 报错 / 跟别的 skill 打架
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: os
+    attributes:
+      label: 系统与版本
+      placeholder: Windows 11 23H2 / macOS 15.2 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: input
+    id: dsh
+    attributes:
+      label: DSH 版本
+      description: 运行 `dsh --version` 的结果。developer preview 期破坏性变更很频繁，版本对不上时先怀疑这个。
+      placeholder: 0.2.2-rc.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: skill 放在哪个根目录
+      description: DSH 按 rank 扫描多个根目录，放错位置会静默不加载。
+      options:
+        - <projectRoot>/.dsh/skills
+        - <dshHome>/skills
+        - <projectRoot>/.agents/skills
+        - <agentsHome>/skills
+        - 通过 Config.customSkillDirs
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: symptom
+    attributes:
+      label: 现象
+      options:
+        - 完全找不到这个 skill（技能列表里没有）
+        - 能找到但从不被调用
+        - 被调用了，但坑库没建起来 / 读写失败
+        - 和别的 skill 重名打架
+        - 脚本报错
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: 具体表现
+      render: text
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pre
+    attributes:
+      label: 提交前自查
+      options:
+        - label: skill 目录是 `<name>/SKILL.md` 这种布局，name 是 kebab-case（DSH 不做嵌套递归发现）
+          required: true
+        - label: SKILL.md 的 frontmatter 以 `---` 开头、有闭合 `---`、有 name 和 description
+          required: true

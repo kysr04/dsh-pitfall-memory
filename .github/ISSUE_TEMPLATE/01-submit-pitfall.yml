@@ -1,0 +1,68 @@
+name: Submit a pitfall
+description: 提交一个坑 —— 让下一个 agent 不在同一个地方再摔倒
+title: "[pitfall] "
+labels: ["entry"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一条有用的坑条目只需要两样东西：**下次怎么三秒内认出它**，和**认出之后跑什么**。
+
+        这次报了什么错，是最不值钱的部分。不用写清楚。
+
+        你不用管文件格式——维护者会把它整理成 `entries/P-XXXX-<slug>.md`。
+
+  - type: input
+    id: one-line
+    attributes:
+      label: 一句话说清这道坑
+      placeholder: pwsh 里写文件默认按 ANSI 存，读回来是乱码
+    validations:
+      required: true
+
+  - type: input
+    id: signal
+    attributes:
+      label: 检测信号（整张表最重要的一栏）
+      description: 下次在哪个瞬间你能确定自己又踩了同一个坑？要具体到看得见的东西。写"要注意编码"等于没写。
+      placeholder: 输出里出现 ``，或文件名变成 `\34 7\233\264` 这种八进制转义
+    validations:
+      required: true
+
+  - type: textarea
+    id: action
+    attributes:
+      label: 正确做法（能直接复制的命令，或明确的分支）
+      description: 必须是可执行的东西。"小心一点"不是做法。
+      placeholder: |
+        Set-Content -Path $f -Value $s -Encoding UTF8
+      render: powershell
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: 环境
+      placeholder: Windows 11 / DSH 0.2.2-rc.1 / pwsh 7.4
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 当时的报错或现象（可选）
+      description: 粘贴原文，不要转述。别人靠这段文字搜到这条。
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 这条里没有密钥、token、内网地址、个人账户路径
+          required: true
+        - label: "「正确做法」是可执行的，不是「要小心」"
+          required: true
