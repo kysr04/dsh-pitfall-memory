@@ -5,6 +5,41 @@
 A local, zero-dependency "mistake ledger" skill for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 Errors get structured into Markdown entries (symptom / cause / fix / **detection signal**), then retrieved before similar tasks so the same mistake doesn't happen twice.
 
+[![Release](https://img.shields.io/github/v/release/kysr04/dsh-pitfall-memory?label=release)](https://github.com/kysr04/dsh-pitfall-memory/releases)
+[![License](https://img.shields.io/github/license/kysr04/dsh-pitfall-memory)](LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-skill-blue)](https://github.com/deepseek-ai/deepseek-harness)
+
+---
+
+## English quick start
+
+**What you get.** A ledger of mistakes the agent has already made — one Markdown file per mistake, holding the thing that makes it recognisable next time (the *detection signal*) and the command that gets you off it. Before a task in a known-tricky area the agent reads the index and pulls the entries that match.
+
+**Install.**
+
+```powershell
+# Windows
+git clone https://github.com/kysr04/dsh-pitfall-memory "$env:USERPROFILE\.dsh\skills\dsh-pitfall-memory"
+```
+
+```sh
+# macOS / Linux
+git clone https://github.com/kysr04/dsh-pitfall-memory ~/.dsh/skills/dsh-pitfall-memory
+```
+
+DSH discovers `<skills-root>/<name>/SKILL.md` through its own watcher — no restart, no build, no npm. Type `/` in a session and `dsh-pitfall-memory` should be listed.
+
+**How you know it works.** Correct the agent once, then say 记住这个坑. A file appears under `~/.dsh/pitfall-memory/entries/`, `index.md` gains a line, and `scripts/pitfall.ps1 search <keyword>` finds it again.
+
+**What this does not do.**
+
+- **It does not inject itself into every turn.** DSH treats a skill as optional instructions, not a session event: the agent has to decide to load it, or you ask. If you want automatic recall on every message, you need a memory plugin on top — that is a separate thing and is not included here.
+- **`SKILL.md` is in Chinese.** The ledger format, the three rules and the entry template are language-neutral, but the instructions you would hand the agent are not English yet.
+- **Windows is the only platform with real mileage.** `scripts/pitfall.ps1` is a Windows shortcut; elsewhere, follow the same steps by hand with `read` / `write` / `grep`. The procedure is written out in `SKILL.md`.
+- `scripts/restart-dsh.ps1` and `scripts/meow-memory-setup.ps1` are the author's own machine helpers, kept for transparency. You do not need them.
+
+**Contributing a pitfall.** Open [Submit a pitfall](../../issues/new?template=01-submit-pitfall.yml) and fill two fields — the detection signal and the fix. You do not need to know the file format.
+
 ---
 
 ## 为什么需要这个
@@ -23,14 +58,25 @@ Agent 会在不同会话里反复犯同一个错：
 
 ## 安装
 
-**把整个目录复制到你的 DSH 技能目录：**
+**推荐：直接 clone 到 DSH 的技能目录。**
 
 ```powershell
 # Windows
+git clone https://github.com/kysr04/dsh-pitfall-memory "$env:USERPROFILE\.dsh\skills\dsh-pitfall-memory"
+```
+
+```sh
+# macOS / Linux
+git clone https://github.com/kysr04/dsh-pitfall-memory ~/.dsh/skills/dsh-pitfall-memory
+```
+
+已经有一份本地副本的话，复制也行：
+
+```powershell
 Copy-Item -Recurse . "$env:USERPROFILE\.dsh\skills\dsh-pitfall-memory"
 ```
 
-也可以手动：把本仓库整个文件夹放进 `%USERPROFILE%\.dsh\skills\`，变成：
+放好之后应该是这样：
 
 ```
 ~/.dsh/skills/dsh-pitfall-memory/
@@ -61,7 +107,9 @@ Copy-Item -Recurse . "$env:USERPROFILE\.dsh\skills\dsh-pitfall-memory"
 | **「上次那个错又犯了」** | 查库找到那条，`hits + 1` |
 | **「错题本现在有啥」** | 列出全部条目 + 高频统计 |
 
-平时什么都不用说。同类任务开工前它会自己检索，报错时把命中的 `high` 条目当硬约束写进计划。
+平时什么都不用说。同类任务开工前它会翻一遍索引，报错时把命中的 `high` 条目当硬约束写进计划。
+
+> 这里有个前提要说清楚：**DSH 的 skill 是被动加载的**（官方文档的说法是 "skill 是可选的指令而非会话事件"），模型得决定调用它。所以"开工前自动检索"这句，在不装行级注入插件的情况下是**半自动**——模型自己想起来、或你顺口提一句"查下坑库"。装了 [meow-memory](#可选接长期记忆插件) 那种每条消息注入的插件之后，才是真的每次自动。
 
 ### 手动操作
 
@@ -178,6 +226,16 @@ $m = "$env:USERPROFILE\.dsh\skills\dsh-pitfall-memory\scripts\meow-memory-setup.
 
 改完在对话里输入 `/` 看有没有。
 
+还是不行？[开个 issue](../../issues/new?template=02-broken.yml)，表单里那几栏正好是我要排查的东西。
+
+---
+
+## 贡献一个坑
+
+不用懂格式。走 [Submit a pitfall](../../issues/new?template=01-submit-pitfall.yml)，只填两栏：**检测信号**和**正确做法**。整理进库是我的事。
+
+会写文件的话直接提 PR：`entries/P-XXXX-<ascii-slug>.md` + `index.md` 加一行，模板见 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md)。
+
 ---
 
 ## 卸载
@@ -193,8 +251,8 @@ Remove-Item "$env:USERPROFILE\.dsh\pitfall-memory" -Recurse -Force   # 坑库，
 
 ## 环境要求
 
-- Windows（脚本用 PowerShell）
-- PowerShell 5.1 或 7+
+- Windows 有完整验证（脚本用 PowerShell 5.1 / 7+）
+- macOS / Linux：条目格式与流程通用，按 `SKILL.md` 里的步骤用 `read`/`write`/`grep` 手工执行，`pitfall.ps1` 用不了
 - DSH 任意版本（技能机制只要支持 `<skills>/<name>/SKILL.md` 即可）
 
 ---
